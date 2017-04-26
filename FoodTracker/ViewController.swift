@@ -16,6 +16,7 @@ class ViewController: UIViewController, UITextFieldDelegate, UIImagePickerContro
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var ratingControl: RatingControl!
     @IBOutlet weak var saveButton: UIBarButtonItem!
+    
     /*
      This value is either passed by `MealTableViewController` in `prepare(for:sender:)`
      or constructed as part of adding a new meal.
@@ -24,9 +25,18 @@ class ViewController: UIViewController, UITextFieldDelegate, UIImagePickerContro
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         // Handle the text field's user input through delegate callbacks. Self refers to view controller
         nameTextField.delegate = self
         
+        // Set up Views if editing an existing meal.
+        
+        if let meal = meal {
+            navigationItem.title = meal.name
+            nameTextField.text = meal.name
+            photoImageView.image = meal.photo
+            ratingControl.rating = meal.rating
+        }
         //enable the save button only if the text field has a valid meal name.
         updateSaveButtonState()
     }
@@ -67,6 +77,20 @@ class ViewController: UIViewController, UITextFieldDelegate, UIImagePickerContro
     
     //MARK: Navigation
     
+    @IBAction func cancel(_ sender: UIBarButtonItem) {
+        //depending on style of presentation (modal or push presentation), this view controller needs to be dismissed in two different ways.
+        
+        let isPresentingInAddMealMode = presentingViewController is UINavigationController //true or false if pressed add, because modal comes from navigation controller
+        
+        if isPresentingInAddMealMode {
+            dismiss(animated: true, completion: nil)
+        } else if let owningNavigationController = navigationController {
+            owningNavigationController.popViewController(animated: true)
+        }
+        else {
+            fatalError("The MealViewController is not inside a navigation controller.")
+        }
+    }
     //this method lets you configure a view controller before it's presented.
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
